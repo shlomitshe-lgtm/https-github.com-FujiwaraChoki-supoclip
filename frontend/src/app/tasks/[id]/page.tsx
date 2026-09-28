@@ -53,12 +53,14 @@ import {
   Scissors,
   Settings2,
   Clapperboard,
+  Youtube,
 } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import DynamicVideoPlayer from "@/components/dynamic-video-player";
 import { TranscriptPreview } from "@/components/transcript-preview";
+import { YouTubePublishDialog } from "@/components/youtube-publish-dialog";
 import { FontSelectOption, type FontOption } from "@/components/font-select-option";
 
 interface Clip {
@@ -123,6 +125,7 @@ export default function TaskPage() {
   const [deletingClipId, setDeletingClipId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [exportPreset, setExportPreset] = useState("original");
+  const [publishingClip, setPublishingClip] = useState<Clip | null>(null);
   const [shareState, setShareState] = useState<"idle" | "copying" | "copied">("idle");
   const [isRevokingShare, setIsRevokingShare] = useState(false);
 
@@ -1196,6 +1199,11 @@ export default function TaskPage() {
                           <Link href={`/tasks/${task.id}/edit?clip=${clip.id}`}><Scissors className="w-4 h-4" />Edit</Link>
                         </Button>
 
+                        <Button size="sm" variant="outline" onClick={() => setPublishingClip(clip)}>
+                          <Youtube className="w-4 h-4 text-red-600" />
+                          YouTube
+                        </Button>
+
                         <Button
                           size="sm"
                           variant="ghost"
@@ -1216,6 +1224,17 @@ export default function TaskPage() {
           </div>
         )}
       </div>
+
+      {publishingClip && task && (
+        <YouTubePublishDialog
+          open={publishingClip !== null}
+          onOpenChange={(open) => { if (!open) setPublishingClip(null); }}
+          taskId={task.id}
+          clipId={publishingClip.id}
+          defaultTitle={publishingClip.hook_title || task.source_title || `Clip ${publishingClip.clip_order}`}
+          defaultDescription={publishingClip.text ? publishingClip.text.slice(0, 500) : ""}
+        />
+      )}
 
       <AlertDialog open={fontToDelete !== null} onOpenChange={(open) => { if (!open) setFontToDelete(null); }}>
         <AlertDialogContent>

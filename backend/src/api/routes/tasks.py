@@ -984,6 +984,69 @@ async def export_clip(
         raise HTTPException(status_code=500, detail=f"Error exporting clip: {str(e)}")
 
 
+@router.post("/{task_id}/clips/{clip_id}/publish/youtube")
+async def publish_clip_to_youtube(
+    task_id: str,
+    clip_id: str,
+    request: Request,
+    db: AsyncSession = Depends(get_db, scope="function"),
+):
+    """Upload a clip to the user's connected YouTube channel as a Short."""
+    from ...services.youtube_publish_service import (
+        YouTubeNotConfigured,
+        YouTubeNotConnected,
+        YouTubePublishError,
+        YouTubePublishService,
+    )
+
+    payload = await _read_json_object(request)
+    task_service = TaskService(db)
+    task = await _require_task_owner(request, task_service, db, task_id)
+    clip = await task_service.clip_repo.get_clip_by_id(db, clip_id)
+    if not clip or clip.get("task_id") != task_id:
+        raise HTTPException(status_code=404, detail="Clip not found")
+
+    clip_path = Path(clip["file_path"])
+    if not clip_path.exists():
+        raise HTTPException(status_code=404, detail="Clip file not found")
+
+    title = payload.get("title")
+    if not isinstance(title, str) or not title.strip():
+        title = clip.get("hook_title") or task.get("source_title") or "SupoClip Short"
+    description = payload.get("description")
+    if not isinstance(description, str):
+        description = ""
+
+    # The upload can take a while; don't hold a pooled connection open for it.
+    await db.close()
+
+    service = YouTubePublishService(get_config())
+    try:
+        result = await service.publish_clip(
+            task["user_id"],
+            clip_path,
+            title=title,
+            description=description,
+            tags=payload.get("tags"),
+            privacy_status=payload.get("privacy_status") or "private",
+            category_id=payload.get("category_id") or "22",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except YouTubeNotConfigured as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except YouTubeNotConnected as exc:
+        raise HTTPException(status_code=409, detail=str(exc))
+    except YouTubePublishError as exc:
+        logger.error("YouTube publish failed for clip %s: %s", clip_id, exc)
+        raise HTTPException(status_code=502, detail=f"YouTube upload failed: {exc}")
+    except Exception as exc:
+        logger.error("Unexpected YouTube publish error for clip %s: %s", clip_id, exc)
+        raise HTTPException(status_code=502, detail="YouTube upload failed")
+
+    return result
+
+
 @router.post("/{task_id}/cancel")
 async def cancel_task(
     task_id: str, request: Request, db: AsyncSession = Depends(get_db)

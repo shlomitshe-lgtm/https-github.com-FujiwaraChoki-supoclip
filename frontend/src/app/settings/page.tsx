@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { SubscriptionCancelBanner } from "@/components/subscription-cancel-banner";
+import { YouTubeConnectionCard } from "@/components/youtube-connection-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -415,6 +416,20 @@ export default function SettingsPage() {
                   disabled={isLoading}
                 />
               </div>
+            </div>
+
+            {/* Integrations Section */}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-black mb-1">
+                  Integrations
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Publish clips straight to your social accounts
+                </p>
+              </div>
+
+              <YouTubeConnectionCard />
             </div>
 
             {/* Developer Section */}

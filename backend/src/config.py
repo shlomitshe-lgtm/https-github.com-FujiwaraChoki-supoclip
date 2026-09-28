@@ -118,6 +118,12 @@ class Config:
         self.app_base_url = (
             self._get_optional_env("NEXT_PUBLIC_APP_URL") or "http://localhost:3107"
         ).rstrip("/")
+        # Composio powers "publish to YouTube": it hosts the Google OAuth flow
+        # and stores each user's YouTube connection.
+        self.composio_api_key = self._get_optional_env("COMPOSIO_API_KEY")
+        self.composio_youtube_auth_config_id = self._get_optional_env(
+            "COMPOSIO_YOUTUBE_AUTH_CONFIG_ID"
+        )
         self.discord_feedback_webhook_url = self._get_optional_env("DISCORD_FEEDBACK_WEBHOOK_URL")
         self.discord_sales_webhook_url = self._get_optional_env("DISCORD_SALES_WEBHOOK_URL")
         self.default_processing_mode = os.getenv("DEFAULT_PROCESSING_MODE", "fast")

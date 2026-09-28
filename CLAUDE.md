@@ -151,6 +151,17 @@ PostgreSQL 15. Schema in `init.sql`. Mixed naming conventions:
 - `POST /tasks/{id}/clips/merge` — Merge selected clips
 - `PATCH /tasks/{id}/clips/{clip_id}/captions` — Update captions
 - `GET /tasks/{id}/clips/{clip_id}/export?preset=tiktok` — Export with platform preset
+- `POST /tasks/{id}/clips/{clip_id}/publish/youtube` — Upload clip as a YouTube Short (via Composio)
+
+**Integrations (Composio):**
+- `GET /integrations/youtube` — Is publishing configured / is the user's channel connected
+- `POST /integrations/youtube/connect` — Returns a Composio-hosted Google OAuth link
+- `DELETE /integrations/youtube` — Disconnect the channel
+
+Publishing lives in `services/youtube_publish_service.py` and needs
+`COMPOSIO_API_KEY` (optionally `COMPOSIO_YOUTUBE_AUTH_CONFIG_ID` for your own
+Google OAuth app). Composio stores the Google tokens keyed by SupoClip user id;
+SupoClip never sees them. Users connect under Settings → Integrations.
 
 **Media:**
 - `GET /fonts`, `GET /transitions`, `GET /caption-templates`, `GET /broll/status`
@@ -181,6 +192,7 @@ OLLAMA_API_KEY=...                   # Optional; required for Ollama Cloud
 
 # Optional
 PEXELS_API_KEY=...                   # B-roll stock footage
+COMPOSIO_API_KEY=...                 # Publish clips to YouTube Shorts
 REDIS_HOST=localhost                 # Default: localhost
 REDIS_PORT=6379                      # Default: 6379
 QUEUED_TASK_TIMEOUT_SECONDS=180      # Fail-safe for stuck tasks
