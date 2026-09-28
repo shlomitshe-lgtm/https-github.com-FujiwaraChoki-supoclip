@@ -31,6 +31,9 @@ dependencies = [
     "boto3>=1.34.0",
     "requests>=2.32.0",
     "cryptography>=42.0.0",
+    "composio>=0.24.0",
+    # composio 0.24 pins a release-candidate client; name it so uv allows it.
+    "composio-client>=2.0.0rc8",
 ]
 
 [dependency-groups]
